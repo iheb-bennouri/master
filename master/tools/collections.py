@@ -8,7 +8,7 @@ def is_complex_iterable(obj: Any) -> bool:
     return isinstance(obj, Iterable) and not isinstance(obj, (str, int, float))
 
 
-class OrderedSet(Iterable):
+class OrderedSet(object, Iterable):
     """
     A set that preserves the insertion order of elements.
     Attributes:
