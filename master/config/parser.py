@@ -45,7 +45,7 @@ class ArgumentParser:
         self.configuration.setdefault('log_file', Path(gettempdir()).joinpath('MONSTER.log'))
         self.configuration.setdefault('log_level', logging.DEBUG)
         self.configuration.setdefault('db_hostname', 'localhost')
-        self.configuration.setdefault('db_port', 5432)
+        self.configuration.setdefault('db_port', 6379)
         self.configuration.setdefault('db_password', None)
         self.configuration.setdefault('db_user', None)
         self.configuration.setdefault('db_name', None)

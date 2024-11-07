@@ -1,10 +1,11 @@
 from contextlib import contextmanager
 import redis
 from master.config.logging import get_logger
-from master.exceptions.db import AccessError
+from master.config.parser import arguments
+from master.exceptions.db import AccessError, DatabaseSessionError
 from master.core.api import Meta
 
-role_key_prefix = "user_roles:"  # Prefix for storing user roles in Redis
+ROLE_KEY_PREFIX = "user_roles:"  # Prefix for storing user roles in Redis
 _logger = get_logger(__name__)
 
 
@@ -17,7 +18,7 @@ class RedisManager(metaclass=Meta):
     @classmethod
     def _get_connection(cls):
         """Internal method to return a connection for role management."""
-        return redis.StrictRedis(host='localhost', port=6379, db=0)
+        return redis.StrictRedis(host=arguments.configuration['db_hostname'], port=arguments.configuration['db_port'], db=0)
 
     def create_role(self, admin_user_id, target_user_id, role):
         """Allows an admin to assign a role to a user."""
@@ -25,13 +26,13 @@ class RedisManager(metaclass=Meta):
             raise AccessError("Only admins can create roles.")
 
         connection = self._get_connection()
-        connection.set(f"{role_key_prefix}{target_user_id}", role)
+        connection.set(f"{ROLE_KEY_PREFIX}{target_user_id}", role)
         _logger.info(f"Role '{role}' assigned to user {target_user_id} by admin {admin_user_id}")
 
     def get_role(self, user_id):
         """Fetches the role of a user."""
         connection = self._get_connection()
-        role = connection.get(f"{role_key_prefix}{user_id}")
+        role = connection.get(f"{ROLE_KEY_PREFIX}{user_id}")
         return role.decode() if role else None
 
     def is_admin(self, user_id):
@@ -61,7 +62,7 @@ class RedisManager(metaclass=Meta):
     def transaction(self, user_id):
         """Executes a transaction block if the user has a connection."""
         if user_id not in self.connections:
-            raise ObjectError(f"No connection found for user {user_id}")
+            raise DatabaseSessionError(f"No connection found for user {user_id}")
 
         connection = self.connections[user_id]
         pipeline = connection.pipeline()
