@@ -83,13 +83,13 @@ class OrderedSet(Iterable):
         """
         if not isinstance(other, OrderedSet):
             raise TypeError(f'Can only add another {self.__class__.__name__}')
-        return OrderedSet(list(self._data.keys()) + list(other._data.keys()))
+        return self.__class__(list(self._data.keys()) + list(other._data.keys()))
 
     def __sub__(self, other: 'OrderedSet') -> 'OrderedSet':
         """Returns a new OrderedSet with elements that are in this set but not in the other."""
         if not isinstance(other, OrderedSet):
             raise TypeError(f'Can only subtract another {self.__class__.__name__}')
-        return OrderedSet([value for value in self if value not in other])
+        return self.__class__([value for value in self if value not in other])
 
     def __contains__(self, value: Any) -> bool:
         """Checks if the value is in the set."""
