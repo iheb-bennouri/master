@@ -1,13 +1,13 @@
-from master.exceptions import Error
+from master.exceptions.basic import Error
 
 
-class DataBaseError(Error):
+class DatabaseError(Error):
     pass
 
 
-class DatabaseSessionError(DataBaseError):
+class DatabaseSessionError(DatabaseError):
     pass
 
 
-class AccessError(DataBaseError):
+class DatabaseAccessError(DatabaseError):
     pass

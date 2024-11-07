@@ -2,7 +2,7 @@ from contextlib import contextmanager
 import redis
 from master.config.logging import get_logger
 from master.config.parser import arguments
-from master.exceptions.db import AccessError, DatabaseSessionError
+from master.exceptions.db import DatabaseAccessError, DatabaseSessionError
 from master.core.api import Meta
 
 ROLE_KEY_PREFIX = "user_roles:"  # Prefix for storing user roles in Redis
@@ -23,7 +23,7 @@ class RedisManager(metaclass=Meta):
     def create_role(self, admin_user_id, target_user_id, role):
         """Allows an admin to assign a role to a user."""
         if not self.is_admin(admin_user_id):
-            raise AccessError("Only admins can create roles.")
+            raise DatabaseAccessError("Only admins can create roles.")
 
         connection = self._get_connection()
         connection.set(f"{ROLE_KEY_PREFIX}{target_user_id}", role)
@@ -42,7 +42,7 @@ class RedisManager(metaclass=Meta):
     def create_connection(self, user_id, host='localhost', port=6379, db=0):
         """Creates a new Redis connection if the user is an admin."""
         if not self.is_admin(user_id):
-            raise AccessError("Only admins can create connections.")
+            raise DatabaseAccessError("Only admins can create connections.")
 
         if user_id not in self.connections:
             self.connections[user_id] = redis.StrictRedis(host=host, port=port, db=db)

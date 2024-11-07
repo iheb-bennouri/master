@@ -1,6 +1,6 @@
 from collections import OrderedDict
 from collections.abc import Iterable
-from typing import Any, Optional, Dict
+from typing import Optional, Any, Iterator
 
 
 def is_complex_iterable(obj: Any) -> bool:
@@ -8,7 +8,7 @@ def is_complex_iterable(obj: Any) -> bool:
     return isinstance(obj, Iterable) and not isinstance(obj, (str, int, float))
 
 
-class OrderedSet(object, Iterable):
+class OrderedSet(Iterable):
     """
     A set that preserves the insertion order of elements.
     Attributes:
@@ -16,12 +16,8 @@ class OrderedSet(object, Iterable):
     """
     __slots__ = '_data'
 
-    def __init__(self, iterable: Optional[Iterable[Any]] = None):
-        """
-        Initializes an OrderedSet, optionally with elements from an iterable.
-        Args:
-            iterable (Optional[Iterable[Any]]): An optional iterable to initialize the set with.
-        """
+    def __init__(self, iterable: Optional[Any] = None):
+        """Initializes an OrderedSet, optionally with elements from an iterable."""
         self._data = OrderedDict()
         if iterable:
             if is_complex_iterable(iterable):
@@ -30,31 +26,18 @@ class OrderedSet(object, Iterable):
                 self.add(iterable)
 
     def add(self, value: Any) -> None:
-        """
-        Adds an element to the set, maintaining order and uniqueness.
-        Args:
-            value (Any): The element to add.
-        """
+        """Adds an element to the set, maintaining order and uniqueness."""
         self._data[value] = None
 
-    def update(self, iterable: Iterable[Any]) -> None:
-        """
-        Adds multiple elements from an iterable to the set.
-        Args:
-            iterable (Iterable[Any]): The iterable containing elements to add.
-        Raises:
-            AssertionError: If the input is not a complex iterable.
-        """
-        assert is_complex_iterable(iterable), "Provided value must be a complex iterable."
+    def update(self, iterable: Any) -> None:
+        """Adds multiple elements from an iterable to the set."""
+        if not is_complex_iterable(iterable):
+            raise TypeError("Provided value must be a complex iterable.")
         for value in iterable:
             self.add(value)
 
     def copy(self) -> 'OrderedSet':
-        """
-        Returns a shallow copy of the OrderedSet.
-        Returns:
-            OrderedSet: A new instance with the same elements.
-        """
+        """Returns a shallow copy of the OrderedSet."""
         return self.__class__(self._data.keys())
 
     def index(self, item: Any) -> int:
@@ -98,54 +81,44 @@ class OrderedSet(object, Iterable):
         Returns:
             OrderedSet: A new OrderedSet with combined elements.
         """
-        assert isinstance(other, OrderedSet), 'Incorrect value type for addition'
+        if not isinstance(other, OrderedSet):
+            raise TypeError(f'Can only add another {self.__class__.__name__}')
         return OrderedSet(list(self._data.keys()) + list(other._data.keys()))
 
     def __sub__(self, other: 'OrderedSet') -> 'OrderedSet':
-        """
-        Returns a new OrderedSet with elements that are in this set but not in the other.
-        Args:
-            other (OrderedSet): Another OrderedSet to subtract.
-        Returns:
-            OrderedSet: A new OrderedSet with the difference.
-        """
-        assert isinstance(other, OrderedSet), 'Incorrect value type for subtraction'
+        """Returns a new OrderedSet with elements that are in this set but not in the other."""
+        if not isinstance(other, OrderedSet):
+            raise TypeError(f'Can only subtract another {self.__class__.__name__}')
         return OrderedSet([value for value in self if value not in other])
 
     def __contains__(self, value: Any) -> bool:
         """Checks if the value is in the set."""
         return value in self._data
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[Any]:
         """Returns an iterator over the set elements."""
         return iter(self._data.keys())
 
-    def __reversed__(self):
+    def __reversed__(self) -> Iterator[Any]:
         """Returns a reverse iterator over the set elements."""
         return reversed(self._data.keys())
 
     def __repr__(self) -> str:
-        """Returns a string representation of the OrderedSet."""
-        return f"OrderedSet({list(self._data.keys())})"
+        """Returns a string representation of the custom set."""
+        return f"{self.__class__.__name__}({list(self._data.keys())})"
 
     def __len__(self) -> int:
         """Returns the number of elements in the set."""
         return len(self._data)
 
     def __eq__(self, other: Any) -> bool:
-        """
-        Checks if this OrderedSet is equal to another OrderedSet or list.
-        Args:
-            other (Any): The other object to compare.
-        Returns:
-            bool: True if equal, False otherwise.
-        """
+        """Checks if this OrderedSet is equal to another OrderedSet, list, or set."""
         if isinstance(other, OrderedSet):
             return list(self._data.keys()) == list(other._data.keys())
         elif isinstance(other, list):
             return list(self._data.keys()) == other
         elif isinstance(other, set):
-            return list(self._data.keys()) == list(other)
+            return set(self._data.keys()) == other
         return False
 
     def __hash__(self) -> int:
@@ -157,21 +130,10 @@ class LastIndexOrderedSet(OrderedSet):
     """
     A subclass of OrderedSet that updates the position of an element to the end
     whenever it's added, effectively maintaining the most recent insertion order.
-
-    This is useful in cases where elements should be re-ordered to reflect
-    their most recent addition.
     """
 
     def add(self, value: Any) -> None:
-        """
-        Adds an element to the set, moving it to the end if it already exists.
-        Args:
-            value (Any): The element to add.
-        """
+        """Adds an element to the set, moving it to the end if it already exists."""
         if value in self._data:
             self.remove(value)  # Remove the value if it already exists.
         super().add(value)  # Add it again, moving it to the end.
-
-    def __repr__(self) -> str:
-        """Returns a string representation of the LastIndexOrderedSet."""
-        return f"LastIndexOrderedSet({list(self._data.keys())})"

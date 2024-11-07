@@ -2,7 +2,7 @@ from ..tools.enums import Enum
 from typing import Optional, Union
 from pathlib import Path
 from tempfile import gettempdir
-from ..tools.collections import LastIndexOrderedSet
+from ..tools.collection import LastIndexOrderedSet
 import platform
 import argparse
 import sys

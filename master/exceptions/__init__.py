@@ -1,5 +1,2 @@
-class Error(Exception):
-    pass
-
-
+from . import basic
 from . import db
