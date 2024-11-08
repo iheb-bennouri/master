@@ -20,10 +20,7 @@ class OrderedSet(Iterable):
         """Initializes an OrderedSet, optionally with elements from an iterable."""
         self._data = OrderedDict()
         if iterable:
-            if is_complex_iterable(iterable):
-                self.update(iterable)
-            else:
-                self.add(iterable)
+            self.update(is_complex_iterable(iterable) and iterable or [iterable])
 
     def add(self, value: Any) -> None:
         """Adds an element to the set, maintaining order and uniqueness."""

@@ -2,7 +2,7 @@ from ..tools.enums import Enum
 from typing import Optional, Union
 from pathlib import Path
 from tempfile import gettempdir
-from ..tools.collection import LastIndexOrderedSet
+from master.tools.collection import LastIndexOrderedSet, OrderedSet
 import platform
 import argparse
 import sys
@@ -45,9 +45,9 @@ class ArgumentParser:
         self.configuration.setdefault('log_file', Path(gettempdir()).joinpath('MONSTER.log'))
         self.configuration.setdefault('log_level', logging.DEBUG)
         self.configuration.setdefault('db_hostname', 'localhost')
-        self.configuration.setdefault('db_port', 6379)
-        self.configuration.setdefault('db_password', None)
-        self.configuration.setdefault('db_user', None)
+        self.configuration.setdefault('db_port', 5432)
+        self.configuration.setdefault('db_password', 'postgres')
+        self.configuration.setdefault('db_user', 'postgres')
         self.configuration.setdefault('db_name', None)
         self.configuration.setdefault('hostname', 'localhost')
         self.configuration.setdefault('port', 6096)
@@ -56,7 +56,7 @@ class ArgumentParser:
 
         # Ensure unique sets for 'addons' and 'git' settings
         self.configuration['addons'] = LastIndexOrderedSet(self.configuration['addons'])
-        self.configuration['git'] = LastIndexOrderedSet(self.configuration['git'])
+        self.configuration['git'] = OrderedSet(self.configuration['git'])
 
     @classmethod
     def show_arguments_description(cls):

@@ -5,7 +5,7 @@ from . import tools
 from . import config
 from . import core
 
-connectors: Optional[core.db.RedisManager] = None
+connectors: Optional[core.db.PostgresManager] = None
 
 
 def main():
