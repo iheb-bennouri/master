@@ -1,5 +1,5 @@
 import enum
-from typing import Any
+from typing import Any, List
 
 
 class Enum(enum.Enum):
@@ -16,3 +16,8 @@ class Enum(enum.Enum):
             if member.value == value:
                 return member
         raise ValueError(f'{value} is not a valid value for {cls.__name__}')
+
+    @classmethod
+    def names(cls) -> List[str]:
+        """Returns the list of all member names corresponding to this class."""
+        return [member.name for member in cls]

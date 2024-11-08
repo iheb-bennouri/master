@@ -1,5 +1,5 @@
 from ..tools.enums import Enum
-from typing import Optional, Union
+from typing import Optional, Union, Any, Type
 from pathlib import Path
 from tempfile import gettempdir
 from master.tools.collection import LastIndexOrderedSet, OrderedSet
@@ -14,6 +14,17 @@ class Mode(Enum):
     """Enum for defining ERP modes."""
     STAGING = 'staging'
     PRODUCTION = 'production'
+
+
+class LoggerType(Enum):
+    CRITICAL = 'CRITICAL'
+    FATAL = 'FATAL'
+    ERROR = 'ERROR'
+    WARNING = 'WARNING'
+    WARN = 'WARN'
+    INFO = 'INFO'
+    DEBUG = 'DEBUG'
+    NOTSET = 'NOTSET'
 
 
 class ArgumentParser:
@@ -42,21 +53,29 @@ class ArgumentParser:
 
         # Default configuration settings
         self.configuration = configuration
-        self.configuration.setdefault('log_file', Path(gettempdir()).joinpath('MONSTER.log'))
-        self.configuration.setdefault('log_level', logging.DEBUG)
-        self.configuration.setdefault('db_hostname', 'localhost')
-        self.configuration.setdefault('db_port', 5432)
-        self.configuration.setdefault('db_password', 'postgres')
-        self.configuration.setdefault('db_user', 'postgres')
-        self.configuration.setdefault('db_name', None)
-        self.configuration.setdefault('hostname', 'localhost')
-        self.configuration.setdefault('port', 6096)
-        self.configuration.setdefault('git', list())
-        self.configuration.setdefault('addons', list())
+        self.setdefault('log_file', str(Path(gettempdir()).joinpath('MASTER.log')), str)
+        self.setdefault('log_level', LoggerType.DEBUG.value, str)
+        self.setdefault('db_hostname', 'localhost', str)
+        self.setdefault('db_port', 5432, int)
+        self.setdefault('db_password', 'postgres', str)
+        self.setdefault('db_user', 'postgres', str)
+        self.setdefault('db_name', 'master', str)
+        self.setdefault('hostname', 'localhost', str)
+        self.setdefault('port', 9000, int)
+        self.setdefault('websocket_port', 9001, int)
+        self.setdefault('pipeline_port', 9002, int)
+        self.setdefault('git', [], list)
+        self.setdefault('addons', [], list)
 
         # Ensure unique sets for 'addons' and 'git' settings
         self.configuration['addons'] = LastIndexOrderedSet(self.configuration['addons'])
         self.configuration['git'] = OrderedSet(self.configuration['git'])
+
+    def setdefault(self, key: str, default_value: Any, value_type: Optional[Type[Any]] = None):
+        self.configuration.setdefault(key, default_value)
+        value = self.configuration[key]
+        if value and value_type and not isinstance(value, value_type):
+            raise ValueError(f'Inccorect configuration value for parameter "{key}"')
 
     @classmethod
     def show_arguments_description(cls):
